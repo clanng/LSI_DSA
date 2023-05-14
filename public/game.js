@@ -99,6 +99,8 @@ class GameScene extends Phaser.Scene {
         this.music = null;
         this.asteroidTimer = 0;
         this.explosionSound = null;
+
+        this.asteroidCount = 5; // Initial asteroid count
     }
 
     preload() {
@@ -116,26 +118,21 @@ class GameScene extends Phaser.Scene {
         this.cursors = this.input.keyboard.createCursorKeys();
         this.rockets = this.physics.add.group();
         this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-        this.asteroids = this.physics.add.group({
-            key: 'asteroid',
-            repeat: 5,
-            setXY: { x: Phaser.Math.Between(0, 800), y: Phaser.Math.Between(0, 600), stepX: 70 }
-        });
-        this.asteroids.children.iterate((asteroid) => {
-            asteroid.setVelocity(Phaser.Math.Between(-100, 100), Phaser.Math.Between(-100, 100));
-            asteroid.setScale(0.3);
-        });
+        this.spaceship.setCollideWorldBounds(true);
+
+
+        // Generate initial asteroids
+        this.generateAsteroids();
+
         this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         this.music = this.sound.add('backgroundMusic', { volume: 0.5, loop: true });
         this.music.play();
 
-        // Initialize the explosion sound
         this.explosionSound = this.sound.add('explosionSound');
 
-        this.physics.add.collider(this.spaceship, this.asteroids, this.hitAsteroid, null, this);
-        this.physics.add.collider(this.rockets, this.asteroids, this.destroyAsteroid, null, this);
 
         this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#FFF' });
+        this.lives = 3;  // Reset lives to 3
         this.livesText = this.add.text(16, 56, 'Lives: 3', { fontSize: '32px', fill: '#FFF' });
     }
 
@@ -154,18 +151,48 @@ class GameScene extends Phaser.Scene {
 
         if (this.lives <= 0) {
             this.music.stop();
-            this.registry.set('score', this.score); // Save the score to registry
             this.scene.start('GameOverScene');
         }
     }
 
-
-    destroyAsteroid(rocket, asteroid) {
+    destroyAsteroid = (rocket, asteroid) => {
         rocket.destroy();
         asteroid.destroy();
-        this.score += 10;
+        this.score += 10; // Increase score by 10 for each destroyed asteroid
         this.scoreText.setText('Score: ' + this.score);
+
+        // Generate new asteroids if the score is a multiple of 30
+        if (this.score % 30 === 0) { // Changed from 100 to 30, for every 30 points or 3 asteroids
+            this.asteroidCount++;
+            this.generateAsteroids();
+        }
     }
+
+
+
+    generateAsteroids = () => {
+        // Check if the asteroids group exists and clear it
+        if (this.asteroids && this.asteroids.children && this.asteroids.children.size > 0) {
+            this.asteroids.clear(true, true); // clear the existing asteroids
+        }
+
+        this.asteroids = this.physics.add.group({
+            key: 'asteroid',
+            repeat: this.asteroidCount,
+            setXY: { x: Phaser.Math.Between(0, 800), y: 0, stepX: 70 } // start asteroids at the top of the screen
+        });
+
+        this.asteroids.children.iterate((asteroid) => {
+            asteroid.setVelocity(Phaser.Math.Between(-50, 50), Phaser.Math.Between(50, 100)); // set x velocity smaller and y velocity always positive
+            asteroid.setScale(0.3);
+        });
+
+        this.physics.add.collider(this.spaceship, this.asteroids, this.hitAsteroid, null, this);
+        this.physics.add.collider(this.rockets, this.asteroids, this.destroyAsteroid, null, this);
+    }
+
+
+
 
     shootRocket(delta) {
         let rocket = this.rockets.create(this.spaceship.x, this.spaceship.y, 'rocket').setScale(0.3);
