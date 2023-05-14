@@ -13,7 +13,7 @@ class StartScene extends Phaser.Scene {
         this.add.image(400, 300, 'startImage'); // Add the background image
 
         // Add start button and scale it to 30%
-        const startButton = this.add.image(400, 450, 'startButton').setInteractive().setScale(0.6);
+        const startButton = this.add.image(400, 480, 'startButton').setInteractive().setScale(0.5);
         startButton.on('pointerdown', () => {
             this.sound.stopAll(); // Stop all sound before transitioning to the GameScene
             this.scene.start('GameScene');
@@ -134,6 +134,26 @@ class GameScene extends Phaser.Scene {
         this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#FFF' });
         this.lives = 3;  // Reset lives to 3
         this.livesText = this.add.text(16, 56, 'Lives: 3', { fontSize: '32px', fill: '#FFF' });
+
+        this.input.on('pointermove', (pointer) => {
+            this.tweens.add({
+                targets: this.spaceship,
+                x: Phaser.Math.Clamp(pointer.x, 0, this.sys.game.config.width),
+                y: Phaser.Math.Clamp(pointer.y, 0, this.sys.game.config.height),
+                duration: 200,
+                ease: 'Power1',
+            });
+        });
+
+        this.input.on('pointermove', (pointer) => {
+            this.spaceship.x = Phaser.Math.Clamp(pointer.x, 0, this.sys.game.config.width);
+            this.spaceship.y = Phaser.Math.Clamp(pointer.y, 0, this.sys.game.config.height);
+        });
+
+        this.input.on('pointerdown', () => {
+            this.shootRocket();
+        });
+
     }
 
     hitAsteroid = (spaceship, asteroid) => {
