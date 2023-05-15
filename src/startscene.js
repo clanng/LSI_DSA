@@ -6,7 +6,7 @@ class StartScene extends Phaser.Scene {
     preload() {
         this.load.image('startButton', 'assets/startButton.png'); // Replace with your own image
         this.load.image('startImage', 'assets/startImage.png'); // Load the background image
-        this.load.audio('startMusic', 'assets/startMusic.m4a'); // Load the background music
+        this.load.audio('startMusic', 'assets/startMusic.mp3'); // Load the background music
     }
 
     create() {

@@ -8,7 +8,7 @@ class GameOverScene extends Phaser.Scene {
     preload() {
         this.load.image('retryButton', 'assets/retryButton.png');
         this.load.image('gameOverBackground', 'assets/gameOverBackground.png');
-        this.load.audio('gameOverMusic', 'assets/gameOverMusic.m4a');
+        this.load.audio('gameOverMusic', 'assets/gameOverMusic.mp3');
     }
 
     create() {

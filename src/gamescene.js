@@ -22,10 +22,10 @@ class GameScene extends Phaser.Scene {
         this.load.image('spaceship', 'assets/spaceship.png');
         this.load.image('asteroid', 'assets/asteroid.png');
         this.load.image('rocket', 'assets/rocket.png');
-        this.load.audio('backgroundMusic', 'assets/SpaceTripByErik.m4a');
+        this.load.audio('backgroundMusic', 'assets/SpaceTripByErik.mp3');
         this.load.image('background', 'assets/background.png');
-        this.load.audio('explosionSound', 'assets/explosionSound.ogg'); // Load the explosion sound file
-        this.load.audio('shootSound', 'assets/shootSound.ogg');
+        this.load.audio('explosionSound', 'assets/explosionSound.mp3'); // Load the explosion sound file
+        this.load.audio('shootSound', 'assets/shootSound.mp3');
         this.load.image('largeAsteroid', 'assets/largeAsteroid.png');
         this.load.image('mediumAsteroid', 'assets/mediumAsteroid.png');
         this.load.image('smallAsteroid', 'assets/smallAsteroid.png');
