@@ -88,8 +88,8 @@ class GameScene extends Phaser.Scene {
 
     }
 
-    createAsteroid = (type) => {
-        let asteroid = this.asteroids.create(Phaser.Math.Between(0, 800), Phaser.Math.Between(-200, 0), type.key);
+    createAsteroid = (type, x = Phaser.Math.Between(0, 800), y = Phaser.Math.Between(-200, 0)) => {
+        let asteroid = this.asteroids.create(x, y, type.key);
         asteroid.setVelocity(Phaser.Math.Between(-type.speed, type.speed), Phaser.Math.Between(type.speed, type.speed * 1.5));
         asteroid.setScale(type.scale);
         asteroid.setData('type', type.key);
@@ -97,12 +97,13 @@ class GameScene extends Phaser.Scene {
         return asteroid;
     }
 
+
     generateAsteroids = () => {
         // Create asteroids of different types and speeds
         const asteroidTypes = [
-            { key: 'largeAsteroid', points: 5, speed: 50, scale: 0.6, count: Math.round(this.asteroidCount * 0.2) }, // 20% of total
-            { key: 'mediumAsteroid', points: 10, speed: 75, scale: 0.4, count: Math.round(this.asteroidCount * 0.3) }, // 30% of total
-            { key: 'smallAsteroid', points: 20, speed: 100, scale: 0.2, count: Math.round(this.asteroidCount * 0.5) } // 50% of total
+            { key: 'largeAsteroid', points: 5, speed: 50, scale: 0.6, count: Math.round(this.asteroidCount * 0.14) }, // 14% of total (reduced by 30%)
+            { key: 'mediumAsteroid', points: 10, speed: 75, scale: 0.4, count: Math.round(this.asteroidCount * 0.21) }, // 21% of total (reduced by 30%)
+            { key: 'smallAsteroid', points: 20, speed: 100, scale: 0.2, count: Math.round(this.asteroidCount * 0.35) } // 35% of total (reduced by 30%)
         ];
 
         for (let type of asteroidTypes) {
@@ -114,6 +115,7 @@ class GameScene extends Phaser.Scene {
         this.physics.add.collider(this.spaceship, this.asteroids, this.hitAsteroid, null, this);
         this.physics.add.collider(this.rockets, this.asteroids, this.destroyAsteroid, null, this);
     }
+
 
     hitAsteroid = (spaceship, asteroid) => {
         this.lives--;
@@ -140,8 +142,10 @@ class GameScene extends Phaser.Scene {
     destroyAsteroid = (rocket, asteroid) => {
         let scoreValue = asteroid.getData('scoreValue');
 
-        // Store asteroid data
-        let asteroidData = asteroid.data.getAll();
+        // Get asteroid type and position
+        let asteroidType = asteroid.getData('type');
+        let asteroidX = asteroid.x;
+        let asteroidY = asteroid.y;
 
         // Destroy the rocket and the asteroid
         rocket.destroy();
@@ -160,7 +164,32 @@ class GameScene extends Phaser.Scene {
             this.asteroidCount++;
             this.generateAsteroids();
         }
+
+        // Check asteroid size and generate smaller ones
+        if (asteroidType === 'largeAsteroid') {
+            // Generate 2 medium asteroids
+            for (let i = 0; i < 2; i++) {
+                this.createAsteroid({
+                    key: 'mediumAsteroid',
+                    points: 10,
+                    speed: 75,
+                    scale: 0.4
+                }, asteroidX, asteroidY);
+            }
+        } else if (asteroidType === 'mediumAsteroid') {
+            // Generate 2 small asteroids
+            for (let i = 0; i < 2; i++) {
+                this.createAsteroid({
+                    key: 'smallAsteroid',
+                    points: 20,
+                    speed: 100,
+                    scale: 0.2
+                }, asteroidX, asteroidY);
+            }
+        }
     }
+
+
 
     shootRocket() {
         let rocket = this.rockets.create(this.spaceship.x, this.spaceship.y, 'rocket').setScale(0.3);
