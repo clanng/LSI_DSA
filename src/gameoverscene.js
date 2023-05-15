@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 class GameOverScene extends Phaser.Scene {
     constructor() {
         super({ key: 'GameOverScene' });
@@ -35,8 +36,13 @@ class GameOverScene extends Phaser.Scene {
             if (this.music) {
                 this.music.stop(); // Stop the music when retrying
             }
+
+            this.registry.destroy(); // destroy game registry
+            this.events.off(); // turn off all active events
+
             this.scene.start('StartScene'); // Start the StartScene
         });
+
 
         // Add the music
         this.music = this.sound.add('gameOverMusic', { volume: 0.5, loop: true });

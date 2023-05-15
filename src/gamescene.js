@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: 'GameScene' });
@@ -13,6 +14,7 @@ class GameScene extends Phaser.Scene {
         this.livesText = null;
         this.music = null;
         this.explosionSound = null;
+        this.lastDifficultyIncreaseScore = 0;  // Add this line in the constructor
 
     }
 
@@ -39,6 +41,8 @@ class GameScene extends Phaser.Scene {
         this.shootSound = this.sound.add('shootSound');
         this.asteroids = this.physics.add.group();
         this.asteroidCount = 10; // Initial asteroid count
+        this.score = 0; // reset score
+        this.lives = 3; // reset lives
 
         // Generate initial asteroids
         this.generateAsteroids();
@@ -49,11 +53,12 @@ class GameScene extends Phaser.Scene {
 
         this.explosionSound = this.sound.add('explosionSound');
 
-        this.score = 0;
         this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#FFF' });
+        this.scoreText.setDepth(1);
 
-        this.lives = 3;  // Reset lives to 3
         this.livesText = this.add.text(16, 56, 'Lives: 3', { fontSize: '32px', fill: '#FFF' });
+        this.livesText.setDepth(1);
+
 
         this.asteroidGenerator = this.time.addEvent({
             delay: 3000, // 3000ms = 3s
@@ -88,10 +93,10 @@ class GameScene extends Phaser.Scene {
         asteroid.setVelocity(Phaser.Math.Between(-type.speed, type.speed), Phaser.Math.Between(type.speed, type.speed * 1.5));
         asteroid.setScale(type.scale);
         asteroid.setData('type', type.key);
-        asteroid.setData('scoreValue', type.points);
-
+        asteroid.setData('scoreValue', type.points); // Make sure we are setting the scoreValue here
         return asteroid;
     }
+
     generateAsteroids = () => {
         // Create asteroids of different types and speeds
         const asteroidTypes = [
@@ -131,7 +136,13 @@ class GameScene extends Phaser.Scene {
         }
     }
 
+
     destroyAsteroid = (rocket, asteroid) => {
+        let scoreValue = asteroid.getData('scoreValue');
+
+        // Store asteroid data
+        let asteroidData = asteroid.data.getAll();
+
         // Destroy the rocket and the asteroid
         rocket.destroy();
         asteroid.destroy();
@@ -139,21 +150,17 @@ class GameScene extends Phaser.Scene {
         // Play explosion sound
         this.explosionSound.play();
 
-        // Increase score depending on asteroid type
-        let scoreValue = asteroid.getData('scoreValue');
-        console.log(scoreValue);  // Add this line
-        if (scoreValue) {
-            this.score += scoreValue;
-            this.scoreText.setText('Score: ' + this.score);
+        // Increase score by 10 for every asteroid hit
+        this.score += 10;
+        this.scoreText.setText('Score: ' + this.score);
 
-            // Increase difficulty for every 100 points scored
-            if (this.score % 100 === 0) {
-                this.asteroidCount++;
-                this.generateAsteroids();
-            }
+        // Increase difficulty for every 100 points scored
+        if (this.score - this.lastScore >= 100) {
+            this.lastScore = this.score;
+            this.asteroidCount++;
+            this.generateAsteroids();
         }
     }
-
 
     shootRocket() {
         let rocket = this.rockets.create(this.spaceship.x, this.spaceship.y, 'rocket').setScale(0.3);
@@ -181,6 +188,9 @@ class GameScene extends Phaser.Scene {
 
         if (Phaser.Input.Keyboard.JustDown(this.spacebar)) {
             this.shootRocket(delta);
+
+            this.scoreText.setDepth(1);
+            this.livesText.setDepth(1);
         }
     }
 }
